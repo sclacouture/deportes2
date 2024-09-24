@@ -11,7 +11,7 @@ body {
 
 .container {
     max-width: 600px;
-    margin: 30px auto;
+    margin: auto;
     background-color: #fff;
     padding: 30px 40px;
     border-radius: 8px;
@@ -88,12 +88,32 @@ button:disabled {
     cursor: default;
 }
 
-a {
-    color: #3498db;
-    text-decoration: none;
+.share-links {
+    margin-top: 15px;
 }
 
-a:hover {
+.share-links a {
+    margin-right: 10px;
+    color: #3498db;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.share-links a:hover {
+    text-decoration: underline;
+}
+
+.get-directions {
+    margin-top: 15px;
+}
+
+.get-directions a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.get-directions a:hover {
     text-decoration: underline;
 }
 

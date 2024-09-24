@@ -1,6 +1,5 @@
 // app.js
 
-// Envolver todo el código dentro de un evento DOMContentLoaded
 document.addEventListener("DOMContentLoaded", () => {
   console.log("DOM fully loaded and parsed");
 
@@ -199,24 +198,49 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Función para seleccionar una actividad según el clima
+  // Función actualizada para seleccionar una actividad según el clima
   function selectActivity(weather) {
     console.log("selectActivity called with weather:", weather);
     const condition = weather.weather[0].main.toLowerCase();
     const temperature = weather.main.temp;
+
+    console.log("Weather condition:", condition);
+    console.log("Temperature:", temperature);
 
     let suitableActivities = [];
 
     if (
       condition.includes("rain") ||
       condition.includes("lluvia") ||
-      condition.includes("storm")
+      condition.includes("storm") ||
+      condition.includes("drizzle") ||
+      condition.includes("thunderstorm")
     ) {
       suitableActivities = activities.rainy;
+      console.log("Condition matched: rainy");
+    } else if (condition.includes("snow") || condition.includes("sleet")) {
+      suitableActivities = activities.rainy; // Asumimos actividades bajo techo
+      console.log("Condition matched: snowy");
+    } else if (
+      condition.includes("mist") ||
+      condition.includes("fog") ||
+      condition.includes("haze")
+    ) {
+      suitableActivities = activities.cloudy;
+      console.log("Condition matched: cloudy (mist/fog/haze)");
+    } else if (condition.includes("clear")) {
+      suitableActivities = activities.sunny;
+      console.log("Condition matched: sunny (clear)");
+    } else if (condition.includes("clouds") || condition.includes("nubes")) {
+      suitableActivities = activities.cloudy;
+      console.log("Condition matched: cloudy");
     } else if (temperature > 28) {
       suitableActivities = activities.sunny;
+      console.log("Condition matched: sunny (temperature)");
     } else {
+      // Por defecto, usamos actividades para clima nublado
       suitableActivities = activities.cloudy;
+      console.log("Condition matched: default to cloudy");
     }
 
     console.log("Suitable activities:", suitableActivities);
@@ -319,54 +343,76 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Construir la recomendación
         let recommendationHTML = `
-                    <p><strong>${
-                      language === "es"
-                        ? "Clima actual en"
-                        : "Current weather in"
-                    } ${city}:</strong> ${description}, ${temperature}°C</p>
-                    <p><strong>${
-                      language === "es"
-                        ? "Actividad recomendada"
-                        : "Recommended activity"
-                    }:</strong> ${activity.name[language]}</p>
-                    <p><strong>${
-                      language === "es"
-                        ? "Número de personas necesarias"
-                        : "Number of people needed"
-                    }:</strong> ${activity.players[language]}</p>
-                    <div class="activity-details">
-                        <p><strong>${
-                          language === "es" ? "Lugar" : "Place"
-                        }:</strong> ${activity.place.name}</p>
-                        <p><strong>${
-                          language === "es" ? "Dirección" : "Address"
-                        }:</strong> ${activity.place.address}</p>
-                        <p><strong>${
-                          language === "es" ? "Horario" : "Schedule"
-                        }:</strong> ${activity.place.schedule}</p>
-                        <p><strong>${
-                          language === "es" ? "Costo de entrada" : "Entry fee"
-                        }:</strong> ${activity.place.cost}</p>
-                    </div>
-                `;
+                  <p><strong>${
+                    language === "es" ? "Clima actual en" : "Current weather in"
+                  } ${city}:</strong> ${description}, ${temperature}°C</p>
+                  <p><strong>${
+                    language === "es"
+                      ? "Actividad recomendada"
+                      : "Recommended activity"
+                  }:</strong> ${activity.name[language]}</p>
+                  <p><strong>${
+                    language === "es"
+                      ? "Número de personas necesarias"
+                      : "Number of people needed"
+                  }:</strong> ${activity.players[language]}</p>
+                  <div class="activity-details">
+                      <p><strong>${
+                        language === "es" ? "Lugar" : "Place"
+                      }:</strong> ${activity.place.name}</p>
+                      <p><strong>${
+                        language === "es" ? "Dirección" : "Address"
+                      }:</strong> ${activity.place.address}</p>
+                      <p><strong>${
+                        language === "es" ? "Horario" : "Schedule"
+                      }:</strong> ${activity.place.schedule}</p>
+                      <p><strong>${
+                        language === "es" ? "Costo de entrada" : "Entry fee"
+                      }:</strong> ${activity.place.cost}</p>
+                  </div>
+              `;
 
-        // Añadir botón para compartir en Twitter
-        const tweetText = encodeURIComponent(
-          `${language === "es" ? "¡Vamos a" : "Let's go to"} ${
-            activity.name[language]
-          } ${language === "es" ? "en" : "at"} ${activity.place.name}!`
-        );
+        // Añadir enlaces de compartir y obtener direcciones
+        const placeEncoded = encodeURIComponent(activity.place.address);
+        const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${placeEncoded}`;
+
+        // Texto para compartir
+        const shareText = `${language === "es" ? "¡Vamos a" : "Let's go to"} ${
+          activity.name[language]
+        } ${language === "es" ? "en" : "at"} ${activity.place.name}!`;
+
+        // Enlaces de compartir
         recommendationHTML += `
-                    <p>
-                        <a href="https://twitter.com/intent/tweet?text=${tweetText}" target="_blank">
-                            ${
-                              language === "es"
-                                ? "Compartir en Twitter"
-                                : "Share on Twitter"
-                            }
-                        </a>
-                    </p>
-                `;
+                  <div class="share-links">
+                      <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                        shareText
+                      )}" target="_blank">
+                          ${
+                            language === "es"
+                              ? "Compartir en Twitter"
+                              : "Share on Twitter"
+                          }
+                      </a>
+                      <a href="https://api.whatsapp.com/send?text=${encodeURIComponent(
+                        shareText
+                      )}" target="_blank">
+                          ${
+                            language === "es"
+                              ? "Compartir en WhatsApp"
+                              : "Share on WhatsApp"
+                          }
+                      </a>
+                  </div>
+                  <div class="get-directions">
+                      <a href="${mapsUrl}" target="_blank">
+                          ${
+                            language === "es"
+                              ? "Obtener Direcciones"
+                              : "Get Directions"
+                          }
+                      </a>
+                  </div>
+              `;
 
         recommendationDiv.innerHTML = recommendationHTML;
       }

@@ -2,46 +2,26 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Actividad Deportiva Recomendada</title>
+    <title>DeporYA</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Enlace al archivo CSS -->
     <link rel="stylesheet" href="styles.css" />
-    <!-- Enlace a Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap"
-      rel="stylesheet"
-    />
   </head>
   <body>
-    <div class="date-time" id="date-time"></div>
     <div class="container">
-      <h1 id="main-title">¿Qué deporte puedo practicar ahora?</h1>
-      <div class="language-switch">
-        <button id="es-btn">ES</button>
-        <button id="en-btn">EN</button>
-      </div>
-      <div class="options">
-        <label>
-          <input type="radio" name="activity-type" value="individual" checked />
-          <span id="individual-label">Individual</span>
-        </label>
-        <label>
-          <input type="radio" name="activity-type" value="group" />
-          <span id="group-label">Grupal</span>
-        </label>
-      </div>
-      <input
-        type="text"
-        id="city-input"
-        placeholder="Ingresa tu ciudad (Ej: Barranquilla,CO)"
-      />
-      <button id="get-activity">Recomendar Actividad</button>
-      <div id="recommendation"></div>
+      <h1 id="landing-title">Selecciona tu Ciudad</h1>
+      <select id="city-select">
+        <option value="" disabled selected>Elige una ciudad</option>
+        <option value="Bogotá,CO">Bogotá</option>
+        <option value="Barranquilla,CO">Barranquilla</option>
+        <option value="Cartagena,CO">Cartagena</option>
+        <option value="Santa Marta,CO">Santa Marta</option>
+        <option value="Medellín,CO">Medellín</option>
+      </select>
+      <button id="continue-button">Continuar</button>
     </div>
 
     <!-- Scripts -->
-    <!-- Añadimos el atributo defer para asegurarnos de que el script se carga después del DOM -->
-    <script src="app.js" defer></script>
+    <script src="index.js"></script>
   </body>
 </html>

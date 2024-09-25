@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Elementos del DOM
   const button = document.getElementById("get-activity");
   const recommendationDiv = document.getElementById("recommendation");
-  const cityInput = document.getElementById("city-input");
   const esBtn = document.getElementById("es-btn");
   const enBtn = document.getElementById("en-btn");
   const dateTimeDiv = document.getElementById("date-time");
@@ -21,7 +20,6 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log("DOM Elements:", {
     button,
     recommendationDiv,
-    cityInput,
     esBtn,
     enBtn,
     dateTimeDiv,
@@ -32,8 +30,36 @@ document.addEventListener("DOMContentLoaded", () => {
   let language = "es";
   let userLocation = null;
 
-  // **Solicitar la ubicación al cargar la página**
-  // Convertimos la obtención de la ubicación en una función que retorna una promesa
+  // Obtener la ciudad seleccionada de localStorage
+  let city = localStorage.getItem("selectedCity");
+  if (!city) {
+    // Si no hay ciudad seleccionada, redirigir a la página de inicio
+    window.location.href = "index.html";
+  } else {
+    // Actualizar el título con la ciudad seleccionada
+    updateTitleWithCity();
+  }
+
+  // Verificar si existe una ubicación particular en localStorage
+  let particularLocation = localStorage.getItem("particularLocation");
+  if (particularLocation) {
+    userLocation = JSON.parse(particularLocation);
+    console.log("Using particular location:", userLocation);
+  } else {
+    // Solicitar la ubicación del usuario al cargar la página
+    getUserLocation();
+  }
+
+  // Función para actualizar el título con la ciudad seleccionada
+  function updateTitleWithCity() {
+    const cityName = city.split(",")[0]; // Obtenemos el nombre de la ciudad
+    title.textContent =
+      language === "es"
+        ? `¿Qué deporte puedo practicar ahora en ${cityName}?`
+        : `What sport can I practice now in ${cityName}?`;
+  }
+
+  // Función para obtener la ubicación geolocalizada del usuario
   async function getUserLocation() {
     return new Promise((resolve, reject) => {
       if ("geolocation" in navigator) {
@@ -67,81 +93,130 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Llamamos a getUserLocation al cargar la página
-  getUserLocation();
-
-  // Lista de actividades según el clima
+  // Lista de actividades según el clima y tipo
   const activities = {
     sunny: [
       // Actividades para clima soleado
       {
-        name: { es: "Voleibol de playa", en: "Beach Volleyball" },
-        players: { es: "4 a 6 personas", en: "4 to 6 people" },
+        name: { es: "Fútbol", en: "Football" },
+        players: { es: "10 personas o más", en: "10 people or more" },
         type: "group",
-        place: {
-          name: "Complejo Deportivo Puerta de Oro",
-          address: "Vía 40 #79B-06, Barranquilla, Colombia",
-          schedule: "6:00 AM - 6:00 PM",
-          cost: "Entrada gratuita",
-        },
+        places: [
+          {
+            name: "Cancha La Magdalena",
+            address: "Calle 45 #14-100, Barranquilla, Colombia",
+            schedule: "8:00 AM - 10:00 PM",
+            cost: "Entrada gratuita",
+            phone: "+573001234567",
+            website: "https://www.canchalamagdalena.com",
+          },
+          {
+            name: "Estadio Metropolitano",
+            address: "Avenida Circunvalar, Barranquilla, Colombia",
+            schedule: "9:00 AM - 6:00 PM",
+            cost: "20,000 COP por hora",
+            phone: "+573009876543",
+            website: "https://www.estadiometropolitano.com",
+          },
+          // ... más lugares
+        ],
       },
-      // ... Añade más actividades aquí
+      // ... otras actividades
     ],
     cloudy: [
       // Actividades para clima nublado
-
-      // Actividades Individuales
       {
         name: { es: "Running", en: "Running" },
         players: { es: "Individual", en: "Individual" },
         type: "individual",
-        place: {
-          name: "Malecón del Río",
-          address: "Vía 40, Barranquilla, Colombia",
-          schedule: "Abierto 24 horas",
-          cost: "Entrada gratuita",
-        },
+        places: [
+          {
+            name: "Malecón del Río",
+            address: "Vía 40, Barranquilla, Colombia",
+            schedule: "Abierto 24 horas",
+            cost: "Entrada gratuita",
+            website: "https://www.malecondelrio.com",
+          },
+          {
+            name: "Parque Sagrado Corazón",
+            address: "Carrera 42F #74-85, Barranquilla, Colombia",
+            schedule: "6:00 AM - 10:00 PM",
+            cost: "Entrada gratuita",
+            website: "https://www.parquesagradocorazon.com",
+          },
+          // ... más lugares
+        ],
       },
-      {
-        name: { es: "Yoga al aire libre", en: "Outdoor Yoga" },
-        players: { es: "Individual o grupo", en: "Individual or group" },
-        type: "individual",
-        place: {
-          name: "Parque Sagrado Corazón",
-          address: "Carrera 42F #74-85, Barranquilla, Colombia",
-          schedule: "6:00 AM - 10:00 PM",
-          cost: "Entrada gratuita",
-        },
-      },
-      // Actividades Grupales
-      {
-        name: { es: "Fútbol", en: "Football" },
-        players: { es: "10 personas o más", en: "10 people or more" },
-        type: "group",
-        place: {
-          name: "Cancha La Magdalena",
-          address: "Calle 45 #14-100, Barranquilla, Colombia",
-          schedule: "8:00 AM - 10:00 PM",
-          cost: "Entrada gratuita",
-        },
-      },
-      {
-        name: { es: "Baloncesto", en: "Basketball" },
-        players: { es: "6 personas", en: "6 people" },
-        type: "group",
-        place: {
-          name: "Parque Los Andes",
-          address: "Carrera 21 #63B-20, Barranquilla, Colombia",
-          schedule: "6:00 AM - 9:00 PM",
-          cost: "Entrada gratuita",
-        },
-      },
-      // ... Añade más actividades aquí
+      // ... otras actividades
     ],
     rainy: [
       // Actividades para clima lluvioso
-      // Asegúrate de incluir la propiedad 'type'
-      // ... Añade actividades aquí
+
+      // Añadimos Padel como actividad grupal en clima lluvioso
+      {
+        name: { es: "Padel", en: "Padel" },
+        players: { es: "4 personas (dos parejas)", en: "4 people (two pairs)" },
+        type: "group",
+        warning:
+          language === "es"
+            ? "Ten en cuenta que está lloviendo y esto puede impedir el acceso al lugar. Llama antes para confirmar."
+            : "Keep in mind that it is raining and this may prevent access to the place. Call ahead to confirm.",
+        places: [
+          {
+            name: "Club de Padel Barranquilla",
+            address: "Calle 85 #64-75, Barranquilla, Colombia",
+            schedule: "7:00 AM - 10:00 PM",
+            cost: "30,000 COP por hora",
+            phone: "+573005551234",
+            website: "https://www.clubpadelbarranquilla.com",
+          },
+          {
+            name: "Padel Premium",
+            address: "Carrera 51B #94-110, Barranquilla, Colombia",
+            schedule: "6:00 AM - 11:00 PM",
+            cost: "35,000 COP por hora",
+            phone: "+573004443333",
+            website: "https://www.padelpremium.com",
+          },
+          // ... más lugares
+        ],
+      },
+
+      // Actividad de Natación en Piscina Cubierta
+      {
+        name: { es: "Natación en piscina cubierta", en: "Indoor Swimming" },
+        players: { es: "Individual o grupo", en: "Individual or group" },
+        type: "individual",
+        places: [
+          {
+            name: "Centro Acuático Olímpico",
+            address: "Calle 47 #18-50, Barranquilla, Colombia",
+            schedule: "7:00 AM - 9:00 PM",
+            cost: "10,000 COP",
+            phone: "+573002221111",
+            website: "https://www.centroacuatico.com",
+          },
+          // ... más lugares
+        ],
+      },
+      // Añadimos una actividad grupal adicional
+      {
+        name: { es: "Boliche", en: "Bowling" },
+        players: { es: "2 a 6 personas", en: "2 to 6 people" },
+        type: "group",
+        places: [
+          {
+            name: "Strike Bowling",
+            address: "Carrera 53 #79-279, Barranquilla, Colombia",
+            schedule: "12:00 PM - 12:00 AM",
+            cost: "15,000 COP por persona",
+            phone: "+573006667777",
+            website: "https://www.strikebowling.com",
+          },
+          // ... más lugares
+        ],
+      },
+      // ... otras actividades
     ],
   };
 
@@ -201,92 +276,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Función actualizada para seleccionar actividades según el clima y tipo
-  async function selectActivities(weather, activityType) {
-    console.log(
-      "selectActivities called with weather:",
-      weather,
-      "activityType:",
-      activityType
-    );
-    const condition = weather.weather[0].main.toLowerCase();
-    const temperature = weather.main.temp;
-
-    console.log("Weather condition:", condition);
-    console.log("Temperature:", temperature);
-
-    let suitableActivities = [];
-
-    // Determinar las actividades según el clima
-    if (
-      condition.includes("rain") ||
-      condition.includes("lluvia") ||
-      condition.includes("storm") ||
-      condition.includes("drizzle") ||
-      condition.includes("thunderstorm")
-    ) {
-      suitableActivities = activities.rainy;
-      console.log("Condition matched: rainy");
-    } else if (condition.includes("snow") || condition.includes("sleet")) {
-      suitableActivities = activities.rainy; // Asumimos actividades bajo techo
-      console.log("Condition matched: snowy");
-    } else if (
-      condition.includes("mist") ||
-      condition.includes("fog") ||
-      condition.includes("haze")
-    ) {
-      suitableActivities = activities.cloudy;
-      console.log("Condition matched: cloudy (mist/fog/haze)");
-    } else if (condition.includes("clear")) {
-      suitableActivities = activities.sunny;
-      console.log("Condition matched: sunny (clear)");
-    } else if (condition.includes("clouds") || condition.includes("nubes")) {
-      suitableActivities = activities.cloudy;
-      console.log("Condition matched: cloudy");
-    } else if (temperature > 28) {
-      suitableActivities = activities.sunny;
-      console.log("Condition matched: sunny (temperature)");
-    } else {
-      // Por defecto, usamos actividades para clima nublado
-      suitableActivities = activities.cloudy;
-      console.log("Condition matched: default to cloudy");
-    }
-
-    // Mostrar las actividades antes de filtrar por tipo
-    console.log("Suitable activities before filtering:", suitableActivities);
-
-    // Filtrar por tipo de actividad
-    suitableActivities = suitableActivities.filter(
-      (activity) => activity.type === activityType
-    );
-
-    console.log("Filtered activities:", suitableActivities);
-
-    // Obtener las coordenadas de cada actividad
-    for (const activity of suitableActivities) {
-      if (!activity.place.coordinates) {
-        const coords = await getCoordinates(activity.place.address);
-        if (coords) {
-          activity.place.coordinates = coords;
-        } else {
-          // Si no se obtienen coordenadas, eliminamos la actividad de la lista
-          console.warn(
-            "Removing activity due to missing coordinates:",
-            activity
-          );
-          suitableActivities = suitableActivities.filter((a) => a !== activity);
-        }
-      }
-    }
-
-    return {
-      activities: suitableActivities,
-      temperature: temperature.toFixed(1),
-      description: weather.weather[0].description,
-    };
-  }
-
-  // Calcular distancia entre dos coordenadas usando la fórmula de Haversine
+  // Calcular distancia entre dos coordenadas
   function calculateDistance(lat1, lon1, lat2, lon2) {
     const R = 6371; // Radio de la Tierra en km
     const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -332,16 +322,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Actualizar el título según el idioma
   function updateTitle() {
     console.log("Updating title and placeholders");
-    title.textContent =
-      language === "es"
-        ? "¿Qué deporte puedo practicar ahora?"
-        : "What sport can I practice now?";
+    // Actualizamos el título con la ciudad
+    updateTitleWithCity();
     button.textContent =
       language === "es" ? "Recomendar Actividad" : "Recommend Activity";
-    cityInput.placeholder =
-      language === "es"
-        ? "Ingresa tu ciudad (Ej: Barranquilla,CO)"
-        : "Enter your city (e.g., Barranquilla,CO)";
     individualLabel.textContent =
       language === "es" ? "Individual" : "Individual";
     groupLabel.textContent = language === "es" ? "Grupal" : "Group";
@@ -350,27 +334,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Evento al hacer clic en el botón
   button.addEventListener("click", async () => {
     console.log("Get Activity button clicked");
-    const city =
-      cityInput.value.trim() ||
-      (language === "es" ? "Barranquilla,CO" : "Barranquilla,CO");
-
-    if (!city) {
-      showError(
-        language === "es"
-          ? "Por favor, ingresa una ciudad."
-          : "Please enter a city."
-      );
-      return;
-    }
-
-    // Obtener el tipo de actividad seleccionado
-    let activityType = "individual";
-    for (const input of activityTypeInputs) {
-      if (input.checked) {
-        activityType = input.value;
-        break;
-      }
-    }
 
     recommendationDiv.innerHTML =
       language === "es"
@@ -378,82 +341,113 @@ document.addEventListener("DOMContentLoaded", () => {
         : "Fetching recommendations...";
 
     // Asegurarnos de que la ubicación del usuario esté obtenida
-    if (!userLocation) {
+    if (!userLocation && !particularLocation) {
       await getUserLocation();
     }
 
     const weather = await getWeather(city);
 
     if (weather) {
-      const result = await selectActivities(weather, activityType);
-      if (result && result.activities.length > 0) {
-        const { activities, temperature, description } = result;
-
-        // Si se obtuvo la ubicación del usuario, calcular distancias
-        if (userLocation) {
-          for (const activity of activities) {
-            activity.distance = calculateDistance(
-              userLocation.latitude,
-              userLocation.longitude,
-              activity.place.coordinates.latitude,
-              activity.place.coordinates.longitude
-            );
-          }
-
-          // Ordenar las actividades por distancia
-          activities.sort((a, b) => a.distance - b.distance);
-        }
+      const activityType = getSelectedActivityType();
+      const result = await selectIdealActivity(weather, activityType);
+      if (result) {
+        const { activity, temperature, description, closestPlaces } = result;
 
         // Construir la recomendación
         let recommendationHTML = `
                   <p><strong>${
                     language === "es" ? "Clima actual en" : "Current weather in"
-                  } ${city}:</strong> ${description}, ${temperature}°C</p>
+                  } ${
+          city.split(",")[0]
+        }:</strong> ${description}, ${temperature}°C</p>
               `;
 
-        for (const activity of activities) {
+        recommendationHTML += `
+                  <div class="activity-details">
+                      <h3>${
+                        language === "es"
+                          ? "Actividad Recomendada"
+                          : "Recommended Activity"
+                      }</h3>
+                      <p><strong>${
+                        language === "es" ? "Actividad" : "Activity"
+                      }:</strong> ${activity.name[language]}</p>
+                      <p><strong>${
+                        language === "es"
+                          ? "Número de personas necesarias"
+                          : "Number of people needed"
+                      }:</strong> ${activity.players[language]}</p>
+              `;
+
+        // Añadir advertencia si existe
+        if (activity.warning) {
           recommendationHTML += `
-                      <div class="activity-details">
+                      <p style="color: orange;"><strong>${
+                        language === "es" ? "Advertencia" : "Warning"
+                      }:</strong> ${activity.warning}</p>
+                  `;
+        }
+
+        // Mostrar hasta dos lugares más cercanos
+        for (let i = 0; i < Math.min(2, closestPlaces.length); i++) {
+          const place = closestPlaces[i];
+          recommendationHTML += `
+                      <div class="place-details">
+                          <h4>${language === "es" ? "Lugar" : "Place"} ${
+            i + 1
+          }:</h4>
                           <p><strong>${
-                            language === "es" ? "Actividad" : "Activity"
-                          }:</strong> ${activity.name[language]}</p>
-                          <p><strong>${
-                            language === "es"
-                              ? "Número de personas necesarias"
-                              : "Number of people needed"
-                          }:</strong> ${activity.players[language]}</p>
-                          <p><strong>${
-                            language === "es" ? "Lugar" : "Place"
-                          }:</strong> ${activity.place.name}</p>
+                            language === "es" ? "Nombre" : "Name"
+                          }:</strong> ${place.name}</p>
                           <p><strong>${
                             language === "es" ? "Dirección" : "Address"
-                          }:</strong> ${activity.place.address}</p>
+                          }:</strong> ${place.address}</p>
                           <p><strong>${
                             language === "es" ? "Horario" : "Schedule"
-                          }:</strong> ${activity.place.schedule}</p>
+                          }:</strong> ${place.schedule}</p>
                           <p><strong>${
                             language === "es" ? "Costo de entrada" : "Entry fee"
-                          }:</strong> ${activity.place.cost}</p>
+                          }:</strong> ${place.cost}</p>
                   `;
 
-          if (userLocation && activity.distance !== undefined) {
+          // Añadir número de teléfono si existe
+          if (place.phone) {
+            const phoneLink = `<a href="tel:${place.phone}">${place.phone}</a>`;
+            recommendationHTML += `
+                          <p><strong>${
+                            language === "es" ? "Teléfono" : "Phone"
+                          }:</strong> ${phoneLink}</p>
+                      `;
+          }
+
+          // Añadir sitio web si existe
+          if (place.website) {
+            const websiteLink = `<a href="${place.website}" target="_blank">${place.website}</a>`;
+            recommendationHTML += `
+                          <p><strong>${
+                            language === "es" ? "Sitio web" : "Website"
+                          }:</strong> ${websiteLink}</p>
+                      `;
+          }
+
+          if (userLocation && place.distance !== undefined) {
             recommendationHTML += `<p><strong>${
               language === "es" ? "Distancia" : "Distance"
-            }:</strong> ${activity.distance.toFixed(2)} km</p>`;
+            }:</strong> ${place.distance.toFixed(2)} km</p>`;
           }
 
           // Añadir enlaces de compartir y obtener direcciones
-          const placeEncoded = encodeURIComponent(activity.place.address);
+          const placeEncoded = encodeURIComponent(place.address);
 
           // Actualización para ofrecer opciones entre Google Maps y Waze
           const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${placeEncoded}`;
-          const wazeUrl = `https://waze.com/ul?ll=${activity.place.coordinates.latitude},${activity.place.coordinates.longitude}&navigate=yes`;
+          const wazeUrl = `https://waze.com/ul?ll=${place.coordinates.latitude},${place.coordinates.longitude}&navigate=yes`;
 
           // Texto para compartir
           const shareText = `${
             language === "es" ? "¡Vamos a" : "Let's go to"
           } ${activity.name[language]} ${language === "es" ? "en" : "at"} ${
-            activity.place.name
+            place.name
           }!`;
 
           // Enlaces de compartir y obtener direcciones
@@ -499,7 +493,6 @@ document.addEventListener("DOMContentLoaded", () => {
                               }
                           </a>
                       </div>
-                      <hr>
                   `;
         }
 
@@ -513,6 +506,125 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   });
+
+  // Función para obtener el tipo de actividad seleccionado
+  function getSelectedActivityType() {
+    let activityType = "individual";
+    for (const input of activityTypeInputs) {
+      if (input.checked) {
+        activityType = input.value;
+        break;
+      }
+    }
+    return activityType;
+  }
+
+  // Función para seleccionar la actividad ideal
+  async function selectIdealActivity(weather, activityType) {
+    console.log(
+      "selectIdealActivity called with weather:",
+      weather,
+      "activityType:",
+      activityType
+    );
+    const condition = weather.weather[0].main.toLowerCase();
+    const temperature = weather.main.temp;
+
+    console.log("Weather condition:", condition);
+    console.log("Temperature:", temperature);
+
+    let possibleActivities = [];
+
+    // Determinar las actividades según el clima
+    if (
+      condition.includes("rain") ||
+      condition.includes("lluvia") ||
+      condition.includes("storm") ||
+      condition.includes("drizzle") ||
+      condition.includes("thunderstorm")
+    ) {
+      possibleActivities = activities.rainy;
+      console.log("Condition matched: rainy");
+    } else if (condition.includes("snow") || condition.includes("sleet")) {
+      possibleActivities = activities.rainy; // Asumimos actividades bajo techo
+      console.log("Condition matched: snowy");
+    } else if (
+      condition.includes("mist") ||
+      condition.includes("fog") ||
+      condition.includes("haze")
+    ) {
+      possibleActivities = activities.cloudy;
+      console.log("Condition matched: cloudy (mist/fog/haze)");
+    } else if (condition.includes("clear")) {
+      possibleActivities = activities.sunny;
+      console.log("Condition matched: sunny (clear)");
+    } else if (condition.includes("clouds") || condition.includes("nubes")) {
+      possibleActivities = activities.cloudy;
+      console.log("Condition matched: cloudy");
+    } else if (temperature > 28) {
+      possibleActivities = activities.sunny;
+      console.log("Condition matched: sunny (temperature)");
+    } else {
+      // Por defecto, usamos actividades para clima nublado
+      possibleActivities = activities.cloudy;
+      console.log("Condition matched: default to cloudy");
+    }
+
+    // Filtrar por tipo de actividad
+    possibleActivities = possibleActivities.filter(
+      (activity) => activity.type === activityType
+    );
+
+    console.log("Possible activities:", possibleActivities);
+
+    if (possibleActivities.length === 0) {
+      return null;
+    }
+
+    // Seleccionar la actividad ideal (puedes definir criterios adicionales aquí)
+    const idealActivity = possibleActivities[0]; // Por simplicidad, tomamos la primera
+
+    // Obtener coordenadas y distancias de cada lugar
+    for (const place of idealActivity.places) {
+      if (!place.coordinates) {
+        const coords = await getCoordinates(place.address);
+        if (coords) {
+          place.coordinates = coords;
+        } else {
+          // Si no se obtienen coordenadas, eliminamos el lugar de la lista
+          console.warn("Removing place due to missing coordinates:", place);
+          idealActivity.places = idealActivity.places.filter(
+            (p) => p !== place
+          );
+          continue;
+        }
+      }
+
+      if (userLocation) {
+        place.distance = calculateDistance(
+          userLocation.latitude,
+          userLocation.longitude,
+          place.coordinates.latitude,
+          place.coordinates.longitude
+        );
+      }
+    }
+
+    if (userLocation) {
+      // Ordenar los lugares por distancia
+      idealActivity.places.sort((a, b) => a.distance - b.distance);
+    }
+
+    // Tomar los lugares más cercanos
+    const closestPlaces = idealActivity.places;
+
+    return {
+      activity: idealActivity,
+      temperature: temperature.toFixed(1),
+      description: weather.weather[0].description,
+      closestPlaces: closestPlaces,
+    };
+  }
 
   // Cambio de idioma
   esBtn.addEventListener("click", () => {

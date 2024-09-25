@@ -19,6 +19,7 @@ body {
     border-radius: 8px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
     position: relative;
+    margin-top: 60px; /* Añadido para evitar superposición */
 }
 
 h1 {
@@ -26,7 +27,8 @@ h1 {
     margin-bottom: 20px;
 }
 
-#city-input {
+#city-input,
+#city-select {
     width: 80%;
     padding: 10px;
     margin-bottom: 15px;
@@ -66,11 +68,31 @@ button:disabled {
 }
 
 .activity-details {
-    margin-top: 15px;
-    text-align: left;
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #2a2a2a;
+    border-radius: 8px;
 }
 
-.activity-details p {
+.activity-details h3 {
+    margin-top: 0;
+    color: #ffffff;
+}
+
+.place-details {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #333;
+    border-radius: 5px;
+}
+
+.place-details h4 {
+    margin-top: 0;
+    color: #ffffff;
+}
+
+.activity-details p,
+.place-details p {
     margin: 5px 0;
 }
 
@@ -116,6 +138,15 @@ a:hover {
     text-decoration: underline;
 }
 
+a[href^="tel:"] {
+    color: #bb86fc;
+}
+
+/* Estilo para los enlaces de sitios web */
+a[href^="http"] {
+    color: #03a9f4;
+}
+
 .share-links a {
     color: #bb86fc;
 }
@@ -133,17 +164,27 @@ a:hover {
     font-weight: 300;
 }
 
+hr {
+    border: none;
+    border-top: 1px solid #444;
+    margin: 20px 0;
+}
+
 @media (max-width: 600px) {
-    #city-input {
+    #city-input,
+    #city-select {
         width: 100%;
     }
 
     .container {
         padding: 20px 20px;
+        margin-top: 20px; /* Ajustado para dispositivos móviles */
     }
 
     .date-time {
-        position: static;
+        position: relative;
+        top: auto;
+        right: auto;
         margin-bottom: 10px;
     }
 }

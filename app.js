@@ -14,6 +14,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const enBtn = document.getElementById("en-btn");
   const dateTimeDiv = document.getElementById("date-time");
   const title = document.getElementById("main-title");
+  const activityTypeInputs = document.getElementsByName("activity-type");
+  const individualLabel = document.getElementById("individual-label");
+  const groupLabel = document.getElementById("group-label");
 
   console.log("DOM Elements:", {
     button,
@@ -23,91 +26,78 @@ document.addEventListener("DOMContentLoaded", () => {
     enBtn,
     dateTimeDiv,
     title,
+    activityTypeInputs,
   });
 
   let language = "es";
+  let userLocation = null;
+
+  // **Solicitar la ubicación al cargar la página**
+  // Convertimos la obtención de la ubicación en una función que retorna una promesa
+  async function getUserLocation() {
+    return new Promise((resolve, reject) => {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            userLocation = {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            };
+            console.log("User location obtained:", userLocation);
+            resolve(userLocation);
+          },
+          (error) => {
+            console.error("Error obtaining location:", error);
+            alert(
+              language === "es"
+                ? "No se pudo obtener tu ubicación. Algunas funciones pueden no estar disponibles."
+                : "Could not obtain your location. Some features may not be available."
+            );
+            resolve(null); // Continuar sin ubicación
+          }
+        );
+      } else {
+        alert(
+          language === "es"
+            ? "La geolocalización no es soportada por tu navegador."
+            : "Geolocation is not supported by your browser."
+        );
+        resolve(null); // Continuar sin ubicación
+      }
+    });
+  }
+
+  // Llamamos a getUserLocation al cargar la página
+  getUserLocation();
 
   // Lista de actividades según el clima
   const activities = {
     sunny: [
+      // Actividades para clima soleado
       {
         name: { es: "Voleibol de playa", en: "Beach Volleyball" },
         players: { es: "4 a 6 personas", en: "4 to 6 people" },
+        type: "group",
         place: {
           name: "Complejo Deportivo Puerta de Oro",
-          address: "Vía 40 #79B-06, Barranquilla",
+          address: "Vía 40 #79B-06, Barranquilla, Colombia",
           schedule: "6:00 AM - 6:00 PM",
           cost: "Entrada gratuita",
         },
       },
-      {
-        name: { es: "Natación", en: "Swimming" },
-        players: { es: "Individual o grupo", en: "Individual or group" },
-        place: {
-          name: "Piscina Olímpica",
-          address: "Carrera 54 #53-122, Barranquilla",
-          schedule: "7:00 AM - 5:00 PM",
-          cost: "Costo de entrada: $10,000 COP",
-        },
-      },
-      {
-        name: { es: "Ciclismo", en: "Cycling" },
-        players: { es: "Individual o grupo", en: "Individual or group" },
-        place: {
-          name: "Parque Washington",
-          address: "Calle 79B #42F, Barranquilla",
-          schedule: "Abierto 24 horas",
-          cost: "Entrada gratuita",
-        },
-      },
-      {
-        name: { es: "Pádel", en: "Padel" },
-        players: { es: "4 personas", en: "4 people" },
-        place: {
-          name: "Club Lagos del Caujaral",
-          address: "Kilómetro 12 Vía al Mar, Puerto Colombia",
-          schedule: "8:00 AM - 8:00 PM",
-          cost: "Costo de entrada: $15,000 COP",
-        },
-      },
+      // ... Añade más actividades aquí
     ],
     cloudy: [
+      // Actividades para clima nublado
+
+      // Actividades Individuales
       {
-        name: { es: "Fútbol", en: "Football" },
-        players: { es: "10 personas o más", en: "10 people or more" },
-        place: {
-          name: "Cancha La Magdalena",
-          address: "Calle 45 #14-100, Barranquilla",
-          schedule: "8:00 AM - 10:00 PM",
-          cost: "Entrada gratuita",
-        },
-      },
-      {
-        name: { es: "Baloncesto", en: "Basketball" },
-        players: { es: "6 personas", en: "6 people" },
-        place: {
-          name: "Parque Los Andes",
-          address: "Carrera 21 #63B-20, Barranquilla",
-          schedule: "6:00 AM - 9:00 PM",
-          cost: "Entrada gratuita",
-        },
-      },
-      {
-        name: { es: "Tenis", en: "Tennis" },
-        players: { es: "2 o 4 personas", en: "2 or 4 people" },
-        place: {
-          name: "Liga de Tenis del Atlántico",
-          address: "Calle 94 #49C-55, Barranquilla",
-          schedule: "7:00 AM - 7:00 PM",
-          cost: "Costo de entrada: $20,000 COP",
-        },
-      },
-      {
-        name: { es: "Correr", en: "Running" },
-        players: { es: "Individual o grupo", en: "Individual or group" },
+        name: { es: "Running", en: "Running" },
+        players: { es: "Individual", en: "Individual" },
+        type: "individual",
         place: {
           name: "Malecón del Río",
-          address: "Vía 40, Barranquilla",
+          address: "Vía 40, Barranquilla, Colombia",
           schedule: "Abierto 24 horas",
           cost: "Entrada gratuita",
         },
@@ -115,55 +105,43 @@ document.addEventListener("DOMContentLoaded", () => {
       {
         name: { es: "Yoga al aire libre", en: "Outdoor Yoga" },
         players: { es: "Individual o grupo", en: "Individual or group" },
+        type: "individual",
         place: {
           name: "Parque Sagrado Corazón",
-          address: "Carrera 42F #74-85, Barranquilla",
+          address: "Carrera 42F #74-85, Barranquilla, Colombia",
           schedule: "6:00 AM - 10:00 PM",
           cost: "Entrada gratuita",
         },
       },
+      // Actividades Grupales
+      {
+        name: { es: "Fútbol", en: "Football" },
+        players: { es: "10 personas o más", en: "10 people or more" },
+        type: "group",
+        place: {
+          name: "Cancha La Magdalena",
+          address: "Calle 45 #14-100, Barranquilla, Colombia",
+          schedule: "8:00 AM - 10:00 PM",
+          cost: "Entrada gratuita",
+        },
+      },
+      {
+        name: { es: "Baloncesto", en: "Basketball" },
+        players: { es: "6 personas", en: "6 people" },
+        type: "group",
+        place: {
+          name: "Parque Los Andes",
+          address: "Carrera 21 #63B-20, Barranquilla, Colombia",
+          schedule: "6:00 AM - 9:00 PM",
+          cost: "Entrada gratuita",
+        },
+      },
+      // ... Añade más actividades aquí
     ],
     rainy: [
-      {
-        name: { es: "Gimnasio bajo techo", en: "Indoor Gym" },
-        players: { es: "Individual o grupo", en: "Individual or group" },
-        place: {
-          name: "Gimnasio BodyTech",
-          address: "Carrera 51B #80-58, Barranquilla",
-          schedule: "5:00 AM - 10:00 PM",
-          cost: "Membresía requerida",
-        },
-      },
-      {
-        name: { es: "Natación en piscina cubierta", en: "Indoor Swimming" },
-        players: { es: "Individual o grupo", en: "Individual or group" },
-        place: {
-          name: "Club Campestre",
-          address: "Vía 40 #79-300, Barranquilla",
-          schedule: "6:00 AM - 9:00 PM",
-          cost: "Membresía requerida",
-        },
-      },
-      {
-        name: { es: "Bádminton", en: "Badminton" },
-        players: { es: "2 o 4 personas", en: "2 or 4 people" },
-        place: {
-          name: "Coliseo Elías Chegwin",
-          address: "Calle 72 #47-50, Barranquilla",
-          schedule: "8:00 AM - 8:00 PM",
-          cost: "Costo de entrada: $10,000 COP",
-        },
-      },
-      {
-        name: { es: "Squash", en: "Squash" },
-        players: { es: "2 personas", en: "2 people" },
-        place: {
-          name: "Squash Club Barranquilla",
-          address: "Carrera 55 #75-99, Barranquilla",
-          schedule: "7:00 AM - 9:00 PM",
-          cost: "Costo de entrada: $15,000 COP",
-        },
-      },
+      // Actividades para clima lluvioso
+      // Asegúrate de incluir la propiedad 'type'
+      // ... Añade actividades aquí
     ],
   };
 
@@ -198,9 +176,39 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Función actualizada para seleccionar una actividad según el clima
-  function selectActivity(weather) {
-    console.log("selectActivity called with weather:", weather);
+  // Función para obtener las coordenadas de una dirección
+  async function getCoordinates(address) {
+    console.log("getCoordinates called with address:", address);
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+      address
+    )}`;
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data && data.length > 0) {
+        const { lat, lon } = data[0];
+        console.log(`Coordinates for ${address}:`, { lat, lon });
+        return { latitude: parseFloat(lat), longitude: parseFloat(lon) };
+      } else {
+        console.error("No coordinates found for address:", address);
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching coordinates:", error);
+      return null;
+    }
+  }
+
+  // Función actualizada para seleccionar actividades según el clima y tipo
+  async function selectActivities(weather, activityType) {
+    console.log(
+      "selectActivities called with weather:",
+      weather,
+      "activityType:",
+      activityType
+    );
     const condition = weather.weather[0].main.toLowerCase();
     const temperature = weather.main.temp;
 
@@ -209,6 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let suitableActivities = [];
 
+    // Determinar las actividades según el clima
     if (
       condition.includes("rain") ||
       condition.includes("lluvia") ||
@@ -243,32 +252,54 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("Condition matched: default to cloudy");
     }
 
-    console.log("Suitable activities:", suitableActivities);
+    // Mostrar las actividades antes de filtrar por tipo
+    console.log("Suitable activities before filtering:", suitableActivities);
 
-    // Verificar si suitableActivities es undefined o vacío
-    if (!suitableActivities || suitableActivities.length === 0) {
-      console.error(
-        "No hay actividades disponibles para las condiciones climáticas actuales."
-      );
-      showError(
-        language === "es"
-          ? "No hay actividades disponibles para el clima actual."
-          : "No activities available for the current weather."
-      );
-      return null;
+    // Filtrar por tipo de actividad
+    suitableActivities = suitableActivities.filter(
+      (activity) => activity.type === activityType
+    );
+
+    console.log("Filtered activities:", suitableActivities);
+
+    // Obtener las coordenadas de cada actividad
+    for (const activity of suitableActivities) {
+      if (!activity.place.coordinates) {
+        const coords = await getCoordinates(activity.place.address);
+        if (coords) {
+          activity.place.coordinates = coords;
+        } else {
+          // Si no se obtienen coordenadas, eliminamos la actividad de la lista
+          console.warn(
+            "Removing activity due to missing coordinates:",
+            activity
+          );
+          suitableActivities = suitableActivities.filter((a) => a !== activity);
+        }
+      }
     }
 
-    // Seleccionar una actividad aleatoria
-    const activity =
-      suitableActivities[Math.floor(Math.random() * suitableActivities.length)];
-
-    console.log("Selected activity:", activity);
-
     return {
-      activity,
+      activities: suitableActivities,
       temperature: temperature.toFixed(1),
       description: weather.weather[0].description,
     };
+  }
+
+  // Calcular distancia entre dos coordenadas usando la fórmula de Haversine
+  function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Radio de la Tierra en km
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+    return distance; // Distancia en km
   }
 
   // Mostrar error
@@ -311,6 +342,9 @@ document.addEventListener("DOMContentLoaded", () => {
       language === "es"
         ? "Ingresa tu ciudad (Ej: Barranquilla,CO)"
         : "Enter your city (e.g., Barranquilla,CO)";
+    individualLabel.textContent =
+      language === "es" ? "Individual" : "Individual";
+    groupLabel.textContent = language === "es" ? "Grupal" : "Group";
   }
 
   // Evento al hacer clic en el botón
@@ -329,92 +363,153 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    // Obtener el tipo de actividad seleccionado
+    let activityType = "individual";
+    for (const input of activityTypeInputs) {
+      if (input.checked) {
+        activityType = input.value;
+        break;
+      }
+    }
+
     recommendationDiv.innerHTML =
       language === "es"
-        ? "Obteniendo recomendación..."
-        : "Fetching recommendation...";
+        ? "Obteniendo recomendaciones..."
+        : "Fetching recommendations...";
+
+    // Asegurarnos de que la ubicación del usuario esté obtenida
+    if (!userLocation) {
+      await getUserLocation();
+    }
 
     const weather = await getWeather(city);
 
     if (weather) {
-      const result = selectActivity(weather);
-      if (result) {
-        const { activity, temperature, description } = result;
+      const result = await selectActivities(weather, activityType);
+      if (result && result.activities.length > 0) {
+        const { activities, temperature, description } = result;
+
+        // Si se obtuvo la ubicación del usuario, calcular distancias
+        if (userLocation) {
+          for (const activity of activities) {
+            activity.distance = calculateDistance(
+              userLocation.latitude,
+              userLocation.longitude,
+              activity.place.coordinates.latitude,
+              activity.place.coordinates.longitude
+            );
+          }
+
+          // Ordenar las actividades por distancia
+          activities.sort((a, b) => a.distance - b.distance);
+        }
 
         // Construir la recomendación
         let recommendationHTML = `
                   <p><strong>${
                     language === "es" ? "Clima actual en" : "Current weather in"
                   } ${city}:</strong> ${description}, ${temperature}°C</p>
-                  <p><strong>${
-                    language === "es"
-                      ? "Actividad recomendada"
-                      : "Recommended activity"
-                  }:</strong> ${activity.name[language]}</p>
-                  <p><strong>${
-                    language === "es"
-                      ? "Número de personas necesarias"
-                      : "Number of people needed"
-                  }:</strong> ${activity.players[language]}</p>
-                  <div class="activity-details">
-                      <p><strong>${
-                        language === "es" ? "Lugar" : "Place"
-                      }:</strong> ${activity.place.name}</p>
-                      <p><strong>${
-                        language === "es" ? "Dirección" : "Address"
-                      }:</strong> ${activity.place.address}</p>
-                      <p><strong>${
-                        language === "es" ? "Horario" : "Schedule"
-                      }:</strong> ${activity.place.schedule}</p>
-                      <p><strong>${
-                        language === "es" ? "Costo de entrada" : "Entry fee"
-                      }:</strong> ${activity.place.cost}</p>
-                  </div>
               `;
 
-        // Añadir enlaces de compartir y obtener direcciones
-        const placeEncoded = encodeURIComponent(activity.place.address);
-        const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${placeEncoded}`;
+        for (const activity of activities) {
+          recommendationHTML += `
+                      <div class="activity-details">
+                          <p><strong>${
+                            language === "es" ? "Actividad" : "Activity"
+                          }:</strong> ${activity.name[language]}</p>
+                          <p><strong>${
+                            language === "es"
+                              ? "Número de personas necesarias"
+                              : "Number of people needed"
+                          }:</strong> ${activity.players[language]}</p>
+                          <p><strong>${
+                            language === "es" ? "Lugar" : "Place"
+                          }:</strong> ${activity.place.name}</p>
+                          <p><strong>${
+                            language === "es" ? "Dirección" : "Address"
+                          }:</strong> ${activity.place.address}</p>
+                          <p><strong>${
+                            language === "es" ? "Horario" : "Schedule"
+                          }:</strong> ${activity.place.schedule}</p>
+                          <p><strong>${
+                            language === "es" ? "Costo de entrada" : "Entry fee"
+                          }:</strong> ${activity.place.cost}</p>
+                  `;
 
-        // Texto para compartir
-        const shareText = `${language === "es" ? "¡Vamos a" : "Let's go to"} ${
-          activity.name[language]
-        } ${language === "es" ? "en" : "at"} ${activity.place.name}!`;
+          if (userLocation && activity.distance !== undefined) {
+            recommendationHTML += `<p><strong>${
+              language === "es" ? "Distancia" : "Distance"
+            }:</strong> ${activity.distance.toFixed(2)} km</p>`;
+          }
 
-        // Enlaces de compartir
-        recommendationHTML += `
-                  <div class="share-links">
-                      <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(
-                        shareText
-                      )}" target="_blank">
-                          ${
+          // Añadir enlaces de compartir y obtener direcciones
+          const placeEncoded = encodeURIComponent(activity.place.address);
+
+          // Actualización para ofrecer opciones entre Google Maps y Waze
+          const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${placeEncoded}`;
+          const wazeUrl = `https://waze.com/ul?ll=${activity.place.coordinates.latitude},${activity.place.coordinates.longitude}&navigate=yes`;
+
+          // Texto para compartir
+          const shareText = `${
+            language === "es" ? "¡Vamos a" : "Let's go to"
+          } ${activity.name[language]} ${language === "es" ? "en" : "at"} ${
+            activity.place.name
+          }!`;
+
+          // Enlaces de compartir y obtener direcciones
+          recommendationHTML += `
+                      <div class="share-links">
+                          <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                            shareText
+                          )}" target="_blank">
+                              ${
+                                language === "es"
+                                  ? "Compartir en Twitter"
+                                  : "Share on Twitter"
+                              }
+                          </a>
+                          <a href="https://api.whatsapp.com/send?text=${encodeURIComponent(
+                            shareText
+                          )}" target="_blank">
+                              ${
+                                language === "es"
+                                  ? "Compartir en WhatsApp"
+                                  : "Share on WhatsApp"
+                              }
+                          </a>
+                      </div>
+                      <div class="get-directions">
+                          <p><strong>${
                             language === "es"
-                              ? "Compartir en Twitter"
-                              : "Share on Twitter"
-                          }
-                      </a>
-                      <a href="https://api.whatsapp.com/send?text=${encodeURIComponent(
-                        shareText
-                      )}" target="_blank">
-                          ${
-                            language === "es"
-                              ? "Compartir en WhatsApp"
-                              : "Share on WhatsApp"
-                          }
-                      </a>
-                  </div>
-                  <div class="get-directions">
-                      <a href="${mapsUrl}" target="_blank">
-                          ${
-                            language === "es"
-                              ? "Obtener Direcciones"
-                              : "Get Directions"
-                          }
-                      </a>
-                  </div>
-              `;
+                              ? "Obtener Direcciones:"
+                              : "Get Directions:"
+                          }</strong></p>
+                          <a href="${mapsUrl}" target="_blank">
+                              ${
+                                language === "es"
+                                  ? "Abrir en Google Maps"
+                                  : "Open in Google Maps"
+                              }
+                          </a><br>
+                          <a href="${wazeUrl}" target="_blank">
+                              ${
+                                language === "es"
+                                  ? "Abrir en Waze"
+                                  : "Open in Waze"
+                              }
+                          </a>
+                      </div>
+                      <hr>
+                  `;
+        }
 
         recommendationDiv.innerHTML = recommendationHTML;
+      } else {
+        showError(
+          language === "es"
+            ? "No hay actividades disponibles para tus criterios."
+            : "No activities available for your criteria."
+        );
       }
     }
   });
